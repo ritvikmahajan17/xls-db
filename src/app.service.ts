@@ -61,8 +61,7 @@ export class xlsDBService {
 
   getCredentials() {
     return {
-      clientEmail: JSON.parse(fs.readFileSync(CREDENTIALS_PATH).toString())
-        .client_email,
+      clientEmail: this.configService.get<string>('client_email'),
     };
   }
 
