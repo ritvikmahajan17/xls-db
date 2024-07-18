@@ -5,6 +5,7 @@ import { Request, Response, NextFunction } from 'express';
 export class TransformBodyMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     if (req.body) {
+      console.log(req.body, 'middleware');
       req.body = this.transform(req.body);
     }
     next();

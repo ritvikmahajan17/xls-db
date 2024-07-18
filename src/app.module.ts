@@ -1,20 +1,13 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { xlsDBController } from './app.controller';
-import { xlsDBService } from './app.service';
-import { TransformBodyMiddleware } from './app.middleware';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { xlsDBModule } from './xlsDB/xlsDB.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    xlsDBModule,
   ],
-  controllers: [xlsDBController],
-  providers: [xlsDBService],
 })
-export class xlsDBModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(TransformBodyMiddleware).forRoutes(xlsDBController); // Apply middleware to specific route or controller
-  }
-}
+export class AppModule {}

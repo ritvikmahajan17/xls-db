@@ -393,6 +393,7 @@ export class xlsDBService {
       [key in string]: string;
     },
     sheetId: string,
+    sheetName?: string,
   ) {
     const response = await this.getAll(whereCondition, sheetId);
 
@@ -406,7 +407,7 @@ export class xlsDBService {
         success: false,
       };
     } else {
-      const sheetid = await this.getSheetId(sheetId, 'Sheet1');
+      const sheetid = await this.getSheetId(sheetId, sheetName);
       for (let i = 0; i < matchingRowIndex.length; i++) {
         const request = {
           spreadsheetId: sheetId,

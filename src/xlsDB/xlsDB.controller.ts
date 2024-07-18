@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Post, Put } from '@nestjs/common';
-import { xlsDBService } from './app.service';
+import { xlsDBService } from './xlsDB.service';
 import { AddDto } from './dto/add.dto';
 import { FindDto } from './dto/find.dto';
 import { UpdateDto } from './dto/update.dto';
@@ -36,26 +36,27 @@ export class xlsDBController {
 
   @Get('get-one')
   getOne(@Body() body: FindDto) {
-    const { where, sheetId } = body;
-    return this.xlsDBService.getOne(where, sheetId);
+    const { where, sheetId, sheetName } = body;
+
+    return this.xlsDBService.getOne(where, sheetId, sheetName);
   }
 
   @Get('get-all')
   getAll(@Body() body: FindDto) {
-    const { where, sheetId } = body;
-    return this.xlsDBService.getAll(where, sheetId);
+    const { where, sheetId, sheetName } = body;
+    return this.xlsDBService.getAll(where, sheetId, sheetName);
   }
 
   @Put('update')
   update(@Body() body: UpdateDto) {
-    const { where, newValues, sheetId } = body;
-    return this.xlsDBService.update(where, newValues, sheetId);
+    const { where, newValues, sheetId, sheetName } = body;
+    return this.xlsDBService.update(where, newValues, sheetId, sheetName);
   }
 
   @Delete('delete')
   delete(@Body() body: DeleteDto) {
-    const { where, sheetId } = body;
-    return this.xlsDBService.delete(where, sheetId);
+    const { where, sheetId, sheetName } = body;
+    return this.xlsDBService.delete(where, sheetId, sheetName);
   }
 
   @Get('get-cache')
