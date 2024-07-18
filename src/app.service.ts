@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import * as fs from 'fs';
 import { google } from 'googleapis';
 import { matchData } from './utils/matchData';
-import { create } from 'domain';
 import { createObjectfromArrays } from './utils/createObjectfromArrays';
+import { ConfigService } from '@nestjs/config';
 
 const SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets',
@@ -20,12 +20,35 @@ export class xlsDBService {
     string,
     { numOfColumns: number; headersPosition: { [key in string]: number } }
   >;
-  constructor() {
-    const credentials = JSON.parse(
-      fs.readFileSync(CREDENTIALS_PATH).toString(),
-    );
+  constructor(private configService: ConfigService) {
+    // const _credentials = JSON.parse(
+    //   fs.readFileSync(CREDENTIALS_PATH).toString(),
+    // );
+
+    const credentials = {
+      type: this.configService.get<string>('type'),
+      project_id: this.configService.get<string>('project_id'),
+      private_key_id: this.configService.get<string>('private_key_id'),
+      private_key: this.configService.get<string>('private_key'),
+      client_email: this.configService.get<string>('client_email'),
+      client_id: this.configService.get<string>('client_id'),
+      auth_uri: this.configService.get<string>('auth_uri'),
+      token_uri: this.configService.get<string>('token_uri'),
+      auth_provider_x509_cert_url: this.configService.get<string>(
+        'auth_provider_x509_cert_url',
+      ),
+      client_x509_cert_url: this.configService.get<string>(
+        'client_x509_cert_url',
+      ),
+      universe_domain: this.configService.get<string>('universe_domain'),
+    };
+
+    Object.keys(credentials).forEach((key) => {
+      return credentials[key].toString().replace(/\n/g, '');
+    });
+
     this.auth = new google.auth.GoogleAuth({
-      credentials,
+      credentials: credentials,
       scopes: SCOPES,
     });
     this.sheets = google.sheets({ version: 'v4', auth: this.auth });

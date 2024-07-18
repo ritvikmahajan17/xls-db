@@ -2,9 +2,14 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { xlsDBController } from './app.controller';
 import { xlsDBService } from './app.service';
 import { TransformBodyMiddleware } from './app.middleware';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+  ],
   controllers: [xlsDBController],
   providers: [xlsDBService],
 })
