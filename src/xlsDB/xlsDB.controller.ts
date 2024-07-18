@@ -68,6 +68,7 @@ export class xlsDBController {
   }
   @Get('health')
   check() {
+    console.log('health check');
     return {
       status: 'ok',
     };
