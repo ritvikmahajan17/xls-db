@@ -4,6 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 @Injectable()
 export class TransformBodyMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
+    console.log(req.hostname, 'Request URL:', req.originalUrl);
     if (req.body) {
       req.body = this.transform(req.body);
     }
