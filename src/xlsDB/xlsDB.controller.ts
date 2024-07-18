@@ -12,7 +12,6 @@ export class xlsDBController {
 
   @Post('add')
   async add(@Body() body: AddDto) {
-    console.log(body, 'controller');
     const values = body.values;
     const sheetId = body.sheetId;
     const sheetName = body?.sheetName;
@@ -25,7 +24,6 @@ export class xlsDBController {
     const values = body.values;
     const sheetId = body.sheetId;
     const sheetName = body?.sheetName;
-    console.log(values, 'controller');
     const response = await this.xlsDBService.batchAdd(
       values,
       sheetId,
