@@ -67,4 +67,10 @@ export class xlsDBController {
   getCredentials() {
     return this.xlsDBService.getCredentials();
   }
+  @Get('health')
+  check() {
+    return {
+      status: 'ok',
+    };
+  }
 }
