@@ -14,6 +14,7 @@ async function bootstrap() {
     }),
   );
   await app.listen(5050);
+  console.log('App is running on port 5050');
 
   if (module.hot) {
     module.hot.accept();
