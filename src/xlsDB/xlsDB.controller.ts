@@ -32,14 +32,14 @@ export class xlsDBController {
     return response;
   }
 
-  @Get('get-one')
+  @Post('get-one')
   getOne(@Body() body: FindDto) {
     const { where, sheetId, sheetName } = body;
 
     return this.xlsDBService.getOne(where, sheetId, sheetName);
   }
 
-  @Get('get-all')
+  @Post('get-all')
   getAll(@Body() body: FindDto) {
     const { where, sheetId, sheetName } = body;
     return this.xlsDBService.getAll(where, sheetId, sheetName);

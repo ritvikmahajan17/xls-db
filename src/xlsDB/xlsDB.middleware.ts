@@ -13,7 +13,7 @@ export class TransformBodyMiddleware implements NestMiddleware {
 
   private transform(obj: any): any {
     if (typeof obj === 'string') {
-      return obj.trim().toLowerCase();
+      return obj.trim();
     }
     if (typeof obj === 'number') {
       return obj.toString();

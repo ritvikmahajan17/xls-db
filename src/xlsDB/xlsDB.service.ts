@@ -268,20 +268,19 @@ export class xlsDBService {
 
     const { columnHeaders } = await this.getColumnsHeaders(sheetId, sheetName);
 
-    const valuesAsObject = createObjectfromArrays(
-      Object.keys(columnHeaders),
-      matchingRow,
-    );
-
     // return the matching row
-    if (matchingRow)
+    if (matchingRow) {
+      const valuesAsObject = createObjectfromArrays(
+        Object.keys(columnHeaders),
+        matchingRow,
+      );
       return {
         matchingRowIndex,
         value: valuesAsObject,
         success: true,
       };
-    // return no data found
-    else {
+    } else {
+      // return no data found
       return {
         matchingRowIndex,
         value: 'No data found',
