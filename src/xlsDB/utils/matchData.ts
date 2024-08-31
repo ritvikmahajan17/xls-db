@@ -6,7 +6,7 @@ export const matchData = (
   },
 ): boolean => {
   for (const [position, value] of Object.entries(positionValuesMap)) {
-    if (dataRow[position] !== value) return false;
+    if (JSON.parse(dataRow[position]) !== value) return false;
   }
   return true;
 };

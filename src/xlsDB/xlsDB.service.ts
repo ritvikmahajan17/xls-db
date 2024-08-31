@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import { google } from 'googleapis';
 import { matchData } from './utils/matchData';
@@ -176,9 +176,9 @@ export class xlsDBService {
     const row = [];
     for (let i = 0; i < totalColumns; i++) {
       if (!positionValuesMap[i]) {
-        row.push('');
+        row.push(JSON.stringify(''));
       } else {
-        row.push(positionValuesMap[i]);
+        row.push(JSON.stringify(positionValuesMap[i])); // fiqure out json.stringy
       }
     }
     const response = await this.sheets.spreadsheets.values.append({
@@ -238,6 +238,8 @@ export class xlsDBService {
     sheetId: string,
     sheetName?: string,
   ) {
+    Logger.log('getOne');
+    Logger.log(whereCondition);
     // get all data
     const response = await this.sheets.spreadsheets.values.batchGet({
       spreadsheetId: sheetId,
@@ -245,6 +247,8 @@ export class xlsDBService {
     });
     const sheetData = response.data.valueRanges[0].values;
     let matchingRowIndex = -1;
+
+    Logger.log(sheetData);
 
     // create a map of column index and value
     const whereConditionArray = Object.entries(whereCondition);
@@ -259,7 +263,7 @@ export class xlsDBService {
     // find the row that matches the where condition
     // Time complexity: O(noOfRows * noOfColumns)
     const matchingRow = sheetData.find((dataRow: string[], index: number) => {
-      if (matchData(dataRow, positionValuesMap)) {
+      if (index > 0 && matchData(dataRow, positionValuesMap)) {
         matchingRowIndex = index;
         return true;
       }
@@ -298,7 +302,7 @@ export class xlsDBService {
   ) {
     const response = await this.sheets.spreadsheets.values.batchGet({
       spreadsheetId: sheetId,
-      ranges: 'Sheet1',
+      ranges: sheetName ?? 'Sheet1',
     });
     const sheetData = response.data.valueRanges[0].values;
     let matchingRowIndex: number[] = [];
@@ -314,7 +318,7 @@ export class xlsDBService {
     }
 
     let matchingRows = sheetData.filter((dataRow: string[], index: number) => {
-      if (matchData(dataRow, positionValuesMap)) {
+      if (index > 0 && matchData(dataRow, positionValuesMap)) {
         matchingRowIndex.push(index);
         return true;
       }
@@ -371,7 +375,7 @@ export class xlsDBService {
         for (let key in newValues) {
           const index = (await this.getColumnIndex(sheetId, key, sheetName))
             .columnPosition;
-          newRow[index] = newValues[key];
+          newRow[index] = JSON.stringify(newValues[key]);
         }
         await this.sheets.spreadsheets.values.update({
           spreadsheetId: sheetId,
