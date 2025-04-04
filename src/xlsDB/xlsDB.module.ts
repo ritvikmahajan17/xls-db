@@ -3,6 +3,7 @@ import { xlsDBController } from './xlsDB.controller';
 import { xlsDBService } from './xlsDB.service';
 import { TransformBodyMiddleware } from './xlsDB.middleware';
 import { ConfigModule } from '@nestjs/config';
+import { GoogleSheetsService } from './googleSheets.service';
 
 @Module({
   imports: [
@@ -11,7 +12,7 @@ import { ConfigModule } from '@nestjs/config';
     }),
   ],
   controllers: [xlsDBController],
-  providers: [xlsDBService],
+  providers: [xlsDBService, GoogleSheetsService],
 })
 export class xlsDBModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

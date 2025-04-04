@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs';
-import { google } from 'googleapis';
+import { google, sheets_v4 } from 'googleapis';
 import { matchData } from './utils/matchData';
 import { createObjectfromArrays } from './utils/createObjectfromArrays';
 import { ConfigService } from '@nestjs/config';
+import { GoogleSheetsService } from './googleSheets.service';
 
 const SCOPES = [
   'https://www.googleapis.com/auth/spreadsheets',
@@ -14,44 +15,12 @@ const CREDENTIALS_PATH =
 
 @Injectable()
 export class xlsDBService {
-  private auth: any;
-  private sheets: any;
   private columnHeadersCache: Map<
     string,
     { numOfColumns: number; headersPosition: { [key in string]: number } }
   >;
-  constructor(private configService: ConfigService) {
-    // const _credentials = JSON.parse(
-    //   fs.readFileSync(CREDENTIALS_PATH).toString(),
-    // );
 
-    const credentials = {
-      type: this.configService.get<string>('type'),
-      project_id: this.configService.get<string>('project_id'),
-      private_key_id: this.configService.get<string>('private_key_id'),
-      private_key: this.configService.get<string>('private_key'),
-      client_email: this.configService.get<string>('client_email'),
-      client_id: this.configService.get<string>('client_id'),
-      auth_uri: this.configService.get<string>('auth_uri'),
-      token_uri: this.configService.get<string>('token_uri'),
-      auth_provider_x509_cert_url: this.configService.get<string>(
-        'auth_provider_x509_cert_url',
-      ),
-      client_x509_cert_url: this.configService.get<string>(
-        'client_x509_cert_url',
-      ),
-      universe_domain: this.configService.get<string>('universe_domain'),
-    };
-
-    Object.keys(credentials).forEach((key) => {
-      return credentials[key].toString().replace(/\n/g, '');
-    });
-
-    this.auth = new google.auth.GoogleAuth({
-      credentials: credentials,
-      scopes: SCOPES,
-    });
-    this.sheets = google.sheets({ version: 'v4', auth: this.auth });
+  constructor(private readonly googleSheetsService: GoogleSheetsService) {
     this.columnHeadersCache = new Map();
   }
 
@@ -59,26 +28,32 @@ export class xlsDBService {
     return this.columnHeadersCache;
   }
 
-  getCredentials() {
-    return {
-      clientEmail: this.configService.get<string>('client_email'),
-    };
-  }
+  /*
+    HELPER FUNCTIONS
+  */
 
   private async fetchColumnHeaders(
     sheetId: string,
+    sheets: sheets_v4.Sheets,
     sheetName?: string,
   ): Promise<string[]> {
-    const response = await this.sheets.spreadsheets.values.get({
+    const response = await sheets.spreadsheets.values.get({
       spreadsheetId: sheetId,
       range: sheetName ? `${sheetName}!1:1` : 'Sheet1!1:1',
     });
     return response.data.values[0];
   }
 
-  private async initColumnHeaders(sheetId: string, sheetName?: string) {
-    const headers = await this.fetchColumnHeaders(sheetId, sheetName);
+  private async initColumnHeaders(
+    sheetId: string,
+    sheets: sheets_v4.Sheets,
+    sheetName?: string,
+  ) {
+    console.log('here');
+    const headers = await this.fetchColumnHeaders(sheetId, sheets, sheetName);
     const numOfColumns = headers.length;
+
+    console.log(headers, 'headers');
 
     const headersPosition = {};
     headers.forEach((header, index) => {
@@ -90,20 +65,22 @@ export class xlsDBService {
 
   private async getNumOfColumns(
     sheetId: string,
+    sheets: sheets_v4.Sheets,
     sheetName?: string,
   ): Promise<number> {
     if (!this.columnHeadersCache.has(sheetId)) {
-      await this.initColumnHeaders(sheetId, sheetName);
+      await this.initColumnHeaders(sheetId, sheets, sheetName);
     }
     return this.columnHeadersCache.get(sheetId).numOfColumns;
   }
 
   private async getColumnsHeaders(
     sheetId: string,
+    sheets: sheets_v4.Sheets,
     sheetName?: string,
   ): Promise<any> {
-    if (!this.columnHeadersCache.has(sheetId)) {
-      await this.initColumnHeaders(sheetId, sheetName);
+    if (!this.columnHeadersCache?.has(sheetId)) {
+      await this.initColumnHeaders(sheetId, sheets, sheetName);
     }
     const { numOfColumns, headersPosition: columnHeaders } =
       this.columnHeadersCache.get(sheetId);
@@ -113,9 +90,11 @@ export class xlsDBService {
       columnHeaders,
     };
   }
+
   private async getColumnIndex(
     sheetId: string,
     columnName: string,
+    sheets: sheets_v4.Sheets,
     sheetName?: string,
   ): Promise<{
     numOfColumns: number;
@@ -123,6 +102,7 @@ export class xlsDBService {
   }> {
     const { numOfColumns, columnHeaders } = await this.getColumnsHeaders(
       sheetId,
+      sheets,
       sheetName,
     );
 
@@ -140,9 +120,10 @@ export class xlsDBService {
 
   private async getSheetId(
     spreadsheetId: string,
+    sheets: sheets_v4.Sheets,
     sheetName: string,
   ): Promise<number> {
-    const spreadsheet = await this.sheets.spreadsheets.get({
+    const spreadsheet = await sheets.spreadsheets.get({
       spreadsheetId,
     });
 
@@ -155,11 +136,16 @@ export class xlsDBService {
     return sheet.properties.sheetId;
   }
 
+  /*
+   REAL FUNCTIONS
+   */
+
   async add(
     values: {
       [key in string]: string;
     },
     sheetId: string,
+    sheets: sheets_v4.Sheets,
     sheetName?: string,
   ) {
     const positionValuesMap = {};
@@ -168,6 +154,7 @@ export class xlsDBService {
       const { numOfColumns, columnPosition: index } = await this.getColumnIndex(
         sheetId,
         column,
+        sheets,
         sheetName,
       );
       positionValuesMap[index] = values[column];
@@ -181,11 +168,11 @@ export class xlsDBService {
         row.push(JSON.stringify(positionValuesMap[i])); // fiqure out json.stringy
       }
     }
-    const response = await this.sheets.spreadsheets.values.append({
+    const response = await sheets.spreadsheets.values.append({
       spreadsheetId: sheetId,
       range: sheetName ?? 'Sheet1',
       valueInputOption: 'RAW',
-      resource: { values: [row] },
+      requestBody: { values: [row] },
     });
     return response.data.updates;
   }
@@ -193,6 +180,7 @@ export class xlsDBService {
   async batchAdd(
     values: Record<string, string>[],
     sheetId: string,
+    sheets: sheets_v4.Sheets,
     sheetName?: string,
   ) {
     const positionValuesMap = {};
@@ -203,6 +191,7 @@ export class xlsDBService {
         const { columnPosition: index } = await this.getColumnIndex(
           sheetId,
           column,
+          sheets,
           sheetName,
         );
         positionValuesMap[index] = currentValue[column];
@@ -211,7 +200,7 @@ export class xlsDBService {
       const row = [];
       for (
         let i = 0;
-        i < (await this.getNumOfColumns(sheetId, sheetName));
+        i < (await this.getNumOfColumns(sheetId, sheets, sheetName));
         i++
       ) {
         if (!positionValuesMap[i]) {
@@ -222,11 +211,11 @@ export class xlsDBService {
       }
       newValues.push(row);
     }
-    const response = await this.sheets.spreadsheets.values.append({
+    const response = await sheets.spreadsheets.values.append({
       spreadsheetId: sheetId,
       range: sheetName ?? 'Sheet1',
       valueInputOption: 'RAW',
-      resource: { values: newValues },
+      requestBody: { values: newValues },
     });
     return response.data.updates;
   }
@@ -236,14 +225,15 @@ export class xlsDBService {
       [key in string]: string;
     },
     sheetId: string,
+    sheets: sheets_v4.Sheets,
     sheetName?: string,
   ) {
     Logger.log('getOne');
     Logger.log(whereCondition);
     // get all data
-    const response = await this.sheets.spreadsheets.values.batchGet({
+    const response = await sheets.spreadsheets.values.batchGet({
       spreadsheetId: sheetId,
-      ranges: sheetName ?? 'Sheet1',
+      ranges: [sheetName ?? 'Sheet1'],
     });
     const sheetData = response.data.valueRanges[0].values;
     let matchingRowIndex = -1;
@@ -255,8 +245,9 @@ export class xlsDBService {
     const positionValuesMap = {};
     for (let i = 0; i < whereConditionArray.length; i++) {
       const [column, value] = whereConditionArray[i];
-      const index = (await this.getColumnIndex(sheetId, column, sheetName))
-        .columnPosition;
+      const index = (
+        await this.getColumnIndex(sheetId, column, sheets, sheetName)
+      ).columnPosition;
       positionValuesMap[index] = value;
     }
 
@@ -270,7 +261,11 @@ export class xlsDBService {
       return false;
     });
 
-    const { columnHeaders } = await this.getColumnsHeaders(sheetId, sheetName);
+    const { columnHeaders } = await this.getColumnsHeaders(
+      sheetId,
+      sheets,
+      sheetName,
+    );
 
     // return the matching row
     if (matchingRow) {
@@ -298,11 +293,12 @@ export class xlsDBService {
       [key in string]: string;
     },
     sheetId: string,
+    sheets: sheets_v4.Sheets,
     sheetName?: string,
   ) {
-    const response = await this.sheets.spreadsheets.values.batchGet({
+    const response = await sheets.spreadsheets.values.batchGet({
       spreadsheetId: sheetId,
-      ranges: sheetName ?? 'Sheet1',
+      ranges: [sheetName ?? 'Sheet1'],
     });
     const sheetData = response.data.valueRanges[0].values;
     let matchingRowIndex: number[] = [];
@@ -312,23 +308,33 @@ export class xlsDBService {
 
     for (let i = 0; i < whereConditionArray.length; i++) {
       const [column, value] = whereConditionArray[i];
-      const index = (await this.getColumnIndex(sheetId, column, sheetName))
-        .columnPosition;
+      const index = (
+        await this.getColumnIndex(sheetId, column, sheets, sheetName)
+      ).columnPosition;
       positionValuesMap[index] = value;
     }
 
-    let matchingRows = sheetData.filter((dataRow: string[], index: number) => {
-      if (index > 0 && matchData(dataRow, positionValuesMap)) {
-        matchingRowIndex.push(index);
-        return true;
-      }
-      return false;
-    });
+    let matchingRows: Record<string, any>[] = sheetData.filter(
+      (dataRow: string[], index: number) => {
+        if (index > 0 && matchData(dataRow, positionValuesMap)) {
+          matchingRowIndex.push(index);
+          return true;
+        }
+        return false;
+      },
+    );
 
-    const { columnHeaders } = await this.getColumnsHeaders(sheetId, sheetName);
+    const { columnHeaders } = await this.getColumnsHeaders(
+      sheetId,
+      sheets,
+      sheetName,
+    );
 
     matchingRows = matchingRows.map((row) =>
-      createObjectfromArrays(Object.keys(columnHeaders), row),
+      createObjectfromArrays(
+        Object.keys(columnHeaders),
+        Array.isArray(row) ? row : [],
+      ),
     );
 
     if (matchingRows.length)
@@ -354,9 +360,10 @@ export class xlsDBService {
       [key in string]: string;
     },
     sheetId: string,
+    sheets: sheets_v4.Sheets,
     sheetName?: string,
   ) {
-    const response = await this.getAll(whereCondition, sheetId);
+    const response = await this.getAll(whereCondition, sheetId, sheets);
     const { matchingRowIndex } = response;
 
     if (matchingRowIndex.length === 0) {
@@ -367,21 +374,22 @@ export class xlsDBService {
     } else {
       for (let i = 0; i < matchingRowIndex.length; i++) {
         const range = `Sheet1!A${matchingRowIndex[i] + 1}:Z${matchingRowIndex[i] + 1}`;
-        const oldData = await this.sheets.spreadsheets.values.get({
+        const oldData = await sheets.spreadsheets.values.get({
           spreadsheetId: sheetId,
           range,
         });
         let newRow = oldData.data.values[0];
         for (let key in newValues) {
-          const index = (await this.getColumnIndex(sheetId, key, sheetName))
-            .columnPosition;
+          const index = (
+            await this.getColumnIndex(sheetId, key, sheets, sheetName)
+          ).columnPosition;
           newRow[index] = JSON.stringify(newValues[key]);
         }
-        await this.sheets.spreadsheets.values.update({
+        await sheets.spreadsheets.values.update({
           spreadsheetId: sheetId,
           range,
           valueInputOption: 'RAW',
-          resource: { values: [newRow] },
+          requestBody: { values: [newRow] },
         });
       }
       return {
@@ -396,9 +404,10 @@ export class xlsDBService {
       [key in string]: string;
     },
     sheetId: string,
+    sheets: sheets_v4.Sheets,
     sheetName?: string,
   ) {
-    const response = await this.getAll(whereCondition, sheetId);
+    const response = await this.getAll(whereCondition, sheetId, sheets);
 
     let { matchingRowIndex } = response;
 
@@ -410,7 +419,11 @@ export class xlsDBService {
         success: false,
       };
     } else {
-      const sheetid = await this.getSheetId(sheetId, sheetName);
+      const sheetid = await this.getSheetId(
+        sheetId,
+        sheets,
+        sheetName ?? 'Sheet1',
+      );
       for (let i = 0; i < matchingRowIndex.length; i++) {
         const request = {
           spreadsheetId: sheetId,
@@ -429,7 +442,7 @@ export class xlsDBService {
             ],
           },
         };
-        await this.sheets.spreadsheets.batchUpdate(request);
+        await sheets.spreadsheets.batchUpdate(request);
       }
       return {
         message: 'Data deleted',

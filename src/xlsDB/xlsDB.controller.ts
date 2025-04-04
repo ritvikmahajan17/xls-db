@@ -5,17 +5,35 @@ import { FindDto } from './dto/find.dto';
 import { UpdateDto } from './dto/update.dto';
 import { DeleteDto } from './dto/delete.dto';
 import { BatchAddDto } from './dto/batch-add.dto';
+import { ApiExcludeEndpoint } from '@nestjs/swagger';
+import { GoogleSheetsService } from './googleSheets.service';
 
 @Controller('xlsDB')
 export class xlsDBController {
-  constructor(private readonly xlsDBService: xlsDBService) {}
+  constructor(
+    private readonly xlsDBService: xlsDBService,
+    private readonly googleSheetsService: GoogleSheetsService,
+  ) {}
 
   @Post('add')
   async add(@Body() body: AddDto) {
     const values = body.values;
     const sheetId = body.sheetId;
+    const serviceClientEmail = body.serviceClientEmail;
+    const servicePrivateKey = body.servicePrivateKey;
     const sheetName = body?.sheetName;
-    const response = await this.xlsDBService.add(values, sheetId, sheetName);
+
+    const sheets = await this.googleSheetsService.createClient({
+      client_email: serviceClientEmail,
+      private_key: servicePrivateKey,
+    });
+
+    const response = await this.xlsDBService.add(
+      values,
+      sheetId,
+      sheets,
+      sheetName,
+    );
     return response;
   }
 
@@ -24,48 +42,94 @@ export class xlsDBController {
     const values = body.values;
     const sheetId = body.sheetId;
     const sheetName = body?.sheetName;
+    const serviceClientEmail = body.serviceClientEmail;
+    const servicePrivateKey = body.servicePrivateKey;
+
+    const sheets = await this.googleSheetsService.createClient({
+      client_email: serviceClientEmail,
+      private_key: servicePrivateKey,
+    });
+
     const response = await this.xlsDBService.batchAdd(
       values,
       sheetId,
+      sheets,
       sheetName,
     );
     return response;
   }
 
   @Post('get-one')
-  getOne(@Body() body: FindDto) {
-    const { where, sheetId, sheetName } = body;
+  async getOne(@Body() body: FindDto) {
+    const { where, sheetId, serviceClientEmail, servicePrivateKey, sheetName } =
+      body;
 
-    return this.xlsDBService.getOne(where, sheetId, sheetName);
+    const sheets = await this.googleSheetsService.createClient({
+      client_email: serviceClientEmail,
+      private_key: servicePrivateKey,
+    });
+
+    return await this.xlsDBService.getOne(where, sheetId, sheets, sheetName);
   }
 
   @Post('get-all')
-  getAll(@Body() body: FindDto) {
-    const { where, sheetId, sheetName } = body;
-    return this.xlsDBService.getAll(where, sheetId, sheetName);
+  async getAll(@Body() body: FindDto) {
+    const { where, sheetId, serviceClientEmail, servicePrivateKey, sheetName } =
+      body;
+
+    const sheets = await this.googleSheetsService.createClient({
+      client_email: serviceClientEmail,
+      private_key: servicePrivateKey,
+    });
+
+    return await this.xlsDBService.getAll(where, sheetId, sheets, sheetName);
   }
 
   @Put('update')
-  update(@Body() body: UpdateDto) {
-    const { where, newValues, sheetId, sheetName } = body;
-    return this.xlsDBService.update(where, newValues, sheetId, sheetName);
+  async update(@Body() body: UpdateDto) {
+    const {
+      where,
+      newValues,
+      sheetId,
+      serviceClientEmail,
+      servicePrivateKey,
+      sheetName,
+    } = body;
+
+    const sheets = await this.googleSheetsService.createClient({
+      client_email: serviceClientEmail,
+      private_key: servicePrivateKey,
+    });
+
+    return await this.xlsDBService.update(
+      where,
+      newValues,
+      sheetId,
+      sheets,
+      sheetName,
+    );
   }
 
   @Delete('delete')
-  delete(@Body() body: DeleteDto) {
-    const { where, sheetId, sheetName } = body;
-    return this.xlsDBService.delete(where, sheetId, sheetName);
+  async delete(@Body() body: DeleteDto) {
+    const { where, sheetId, serviceClientEmail, servicePrivateKey, sheetName } =
+      body;
+
+    const sheets = await this.googleSheetsService.createClient({
+      client_email: serviceClientEmail,
+      private_key: servicePrivateKey,
+    });
+
+    return await this.xlsDBService.delete(where, sheetId, sheets, sheetName);
   }
 
+  @ApiExcludeEndpoint()
   @Get('get-cache')
   getCache() {
     return Object.fromEntries(this.xlsDBService.getCache());
   }
 
-  @Get('get-credentials')
-  getCredentials() {
-    return this.xlsDBService.getCredentials();
-  }
+  @ApiExcludeEndpoint()
   @Get('health')
   check() {
     console.log('health check');
