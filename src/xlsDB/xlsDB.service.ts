@@ -49,11 +49,8 @@ export class xlsDBService {
     sheets: sheets_v4.Sheets,
     sheetName?: string,
   ) {
-    console.log('here');
     const headers = await this.fetchColumnHeaders(sheetId, sheets, sheetName);
     const numOfColumns = headers.length;
-
-    console.log(headers, 'headers');
 
     const headersPosition = {};
     headers.forEach((header, index) => {
