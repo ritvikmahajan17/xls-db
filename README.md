@@ -36,12 +36,17 @@
    ```
    This will display the Swagger UI, where you can test all the available APIs interactively.
 
+## Create a table
+
+To add a new column to your table, simply enter the column name in the first row (header row) of your Google Sheet.
+
 ## **Available APIs**
 
 ### **1. Add a Single Row**
 
 - **Endpoint**: `POST /xlsDB/add`
 - **Description**: Appends a single row to the Google Sheet.
+- **Note**: name, age and city are column headers in the google sheet
 - **Request Body**:
   ```json
   {
