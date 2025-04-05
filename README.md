@@ -331,3 +331,7 @@ To use `xlsDB`, you need to set up a Google Service Account to authenticate with
   - `servicePrivateKey`: The `private_key` field from the JSON file.
 
 Your Service Account is now set up and ready to use with `xlsDB`.
+
+---
+
+#### When not to use xlsDB: [read here](https://gist.github.com/ritvikmahajan17/c6af11fd12d05f9fa27188fb4e18cf8e)
