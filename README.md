@@ -1,6 +1,10 @@
-# **xlsDB User Guide**
+# **Your favorite spreadsheet, now your favorite backend.**
 
-`xlsDB` is a Node.js application built with the NestJS framework that allows users to interact with Google Sheets as if they were a database. It provides APIs to perform CRUD operations on Google Sheets.
+xlsDB turns any Google Sheet into a scalable backend service — no servers, no database management, just your spreadsheet and a simple API.
+
+It's perfect for small apps, MVPs, internal dashboards, or automations. With built-in authentication, CRUD support, and a clean developer experience, you can focus on building — not configuring databases.
+
+Whether you’re a solo founder, indie hacker, or just want a fast way to get data into your apps, this makes it effortless.
 
 ---
 
