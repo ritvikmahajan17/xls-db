@@ -17,6 +17,8 @@ import { DeleteDto } from './dto/delete.dto';
 import { BatchAddDto } from './dto/batch-add.dto';
 import { ApiExcludeEndpoint, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { GoogleSheetsService } from './googleSheets.service';
+import * as path from 'path';
+import * as fs from 'fs';
 
 @Controller('xlsDB')
 export class xlsDBController {
@@ -308,6 +310,18 @@ export class xlsDBController {
   @Get('get-cache')
   getCache() {
     return Object.fromEntries(this.xlsDBService.getCache());
+  }
+
+  @ApiExcludeEndpoint()
+  @Get('')
+  serveDocs(@Res() res: Response) {
+    console.log('serveDocs');
+    const filePath = path.join(__dirname, '..', '..', 'src', 'xlsDB.html');
+    console.log('filePath', filePath);
+    if (!fs.existsSync(filePath)) {
+      return res.status(HttpStatus.NOT_FOUND).send('docs.html not found');
+    }
+    res.sendFile(filePath);
   }
 
   @ApiExcludeEndpoint()
