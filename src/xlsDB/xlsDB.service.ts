@@ -147,6 +147,24 @@ export class xlsDBService {
   ) {
     const positionValuesMap = {};
     let totalColumns = 0;
+
+    // iterate over keys of values which user wants to add
+    // and get the column index of each key
+    // and add in the positionValuesMap, they index of column and value to be added at that index
+    // for example if user wants to add {name: 'John', age: '30'}
+    // and the column index of name is 0 and age is 1
+    // then the positionValuesMap will be {0: 'John', 1: '30'}
+
+    // then we will iterate from 0 to totalColumns(in the sheet) and check if the index is present in the positionValuesMap
+    // if it is present then we will push the value to the row
+    // if it is not present then we will push an empty string to the row
+    // so that we can create a row of the same length as the sheet
+    // and then append the row to the sheet
+    // for example if the positionValuesMap is {0: 'John', 1: '30'}
+    // then the row will be ['John', '30']
+
+    // and then we will append the row to the sheet
+
     for (let column in values) {
       const { numOfColumns, columnPosition: index } = await this.getColumnIndex(
         sheetId,
@@ -181,33 +199,58 @@ export class xlsDBService {
     sheetName?: string,
   ) {
     const positionValuesMap = {};
+
+    // to be an array of arrays, where each array is a row
+    // for example if the values are [{name: 'John', age: '30'}, {name: 'Jane', age: '25'}]
+    // then the newValues will be [['John', '30'], ['Jane', '25']]
+    // and then we will append the newValues to the sheet
     const newValues = [];
+
+    // iterate of each values which user wants to add
     for (let i = 0; i < values.length; i++) {
       const currentValue = values[i];
+      // iterate over keys of values which user wants to add
       for (let column in currentValue) {
+        // get the column index of each key
         const { columnPosition: index } = await this.getColumnIndex(
           sheetId,
           column,
           sheets,
           sheetName,
         );
+        // add in the positionValuesMap, they index of column and value to be added at that index
+        // for example if user wants to add {name: 'John', age: '30'}
+        // and the column index of name is 0 and age is 1
+        // then the positionValuesMap will be {0: 'John', 1: '30'}
         positionValuesMap[index] = currentValue[column];
       }
 
       const row = [];
+      // then we will iterate from 0 to totalColumns(in the sheet) and check if the index is present in the positionValuesMap
+      // if it is present then we will push the value to the row
+      // if it is not present then we will push an empty string to the row
+      // so that we can create a row of the same length as the sheet
       for (
         let i = 0;
         i < (await this.getNumOfColumns(sheetId, sheets, sheetName));
         i++
       ) {
         if (!positionValuesMap[i]) {
-          row.push('');
+          row.push(JSON.stringify(''));
         } else {
-          row.push(positionValuesMap[i]);
+          row.push(JSON.stringify(positionValuesMap[i]));
         }
       }
+      // then we will append the row to the newValues
+      // for example if the positionValuesMap is {0: 'John', 1: '30'}
+      // then the row will be ['John', '30']
+      // and then we will append the row to the newValues
+      // for example if the newValues is [['John', '30']]
+      // then the newValues will be [['John', '30'], ['Jane', '25']]
       newValues.push(row);
     }
+
+    // and then we will append the newValues to the sheet
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId: sheetId,
       range: sheetName ?? 'Sheet1',
@@ -225,9 +268,7 @@ export class xlsDBService {
     sheets: sheets_v4.Sheets,
     sheetName?: string,
   ) {
-    Logger.log('getOne');
-    Logger.log(whereCondition);
-    // get all data
+    // get all data from the sheet
     const response = await sheets.spreadsheets.values.batchGet({
       spreadsheetId: sheetId,
       ranges: [sheetName ?? 'Sheet1'],
@@ -235,9 +276,10 @@ export class xlsDBService {
     const sheetData = response.data.valueRanges[0].values;
     let matchingRowIndex = -1;
 
-    Logger.log(sheetData);
-
     // create a map of column index and value
+    // for example if the whereCondition is {name: 'John', age: '30'}
+    // and the column index of name is 0 and age is 1
+    // then the positionValuesMap will be {0: 'John', 1: '30'}
     const whereConditionArray = Object.entries(whereCondition);
     const positionValuesMap = {};
     for (let i = 0; i < whereConditionArray.length; i++) {
@@ -250,6 +292,9 @@ export class xlsDBService {
 
     // find the row that matches the where condition
     // Time complexity: O(noOfRows * noOfColumns)
+
+    // iterate over each row and check if the row matches the where condition
+    // if it matches then return the row
     const matchingRow = sheetData.find((dataRow: string[], index: number) => {
       if (index > 0 && matchData(dataRow, positionValuesMap)) {
         matchingRowIndex = index;
@@ -265,6 +310,10 @@ export class xlsDBService {
     );
 
     // return the matching row
+    // if the matching row is found then create an object from the arrays
+    // for example if the matching row is ['John', '30', 'New York']
+    // and the column headers are ['name', 'age', 'city']
+    // then the object will be {name: 'John', age: '30', city: 'New York'}
     if (matchingRow) {
       const valuesAsObject = createObjectfromArrays(
         Object.keys(columnHeaders),
@@ -293,6 +342,7 @@ export class xlsDBService {
     sheets: sheets_v4.Sheets,
     sheetName?: string,
   ) {
+    // get all data from the sheet
     const response = await sheets.spreadsheets.values.batchGet({
       spreadsheetId: sheetId,
       ranges: [sheetName ?? 'Sheet1'],
@@ -303,6 +353,10 @@ export class xlsDBService {
     const whereConditionArray = Object.entries(whereCondition);
     const positionValuesMap = {};
 
+    // create a map of column index and value
+    // for example if the whereCondition is {name: 'John', age: '30'}
+    // and the column index of name is 0 and age is 1
+    // then the positionValuesMap will be {0: 'John', 1: '30'}
     for (let i = 0; i < whereConditionArray.length; i++) {
       const [column, value] = whereConditionArray[i];
       const index = (
@@ -311,6 +365,11 @@ export class xlsDBService {
       positionValuesMap[index] = value;
     }
 
+    // find the rows that match the where condition
+    // Time complexity: O(noOfRows * noOfColumns)
+
+    // iterate over each row and check if the row matches the where condition
+    // if it matches then add the row to the matchingRows array
     let matchingRows: Record<string, any>[] = sheetData.filter(
       (dataRow: string[], index: number) => {
         if (index > 0 && matchData(dataRow, positionValuesMap)) {
@@ -327,6 +386,11 @@ export class xlsDBService {
       sheetName,
     );
 
+    // return the matching rows
+    // if the matching rows are found then create an object from the arrays
+    // for example if the matching rows are [['John', '30', 'New York'], ['Jane', '25', 'Los Angeles']]
+    // and the column headers are ['name', 'age', 'city']
+    // then the object will be [{name: 'John', age: '30', city: 'New York'}, {name: 'Jane', age: '25', city: 'Los Angeles'}]
     matchingRows = matchingRows.map((row) =>
       createObjectfromArrays(
         Object.keys(columnHeaders),
@@ -340,6 +404,7 @@ export class xlsDBService {
         value: matchingRows,
         success: true,
       };
+    // if no matching rows are found then return no data found
     else {
       return {
         matchingRowIndex,
@@ -360,28 +425,48 @@ export class xlsDBService {
     sheets: sheets_v4.Sheets,
     sheetName?: string,
   ) {
+    // get all data from the sheet, which matches the where condition
     const response = await this.getAll(whereCondition, sheetId, sheets);
+
+    // get the matching rows indexes
     const { matchingRowIndex } = response;
 
+    // if no matching rows are found then return no data found
     if (matchingRowIndex.length === 0) {
       return {
         message: 'No data found',
         success: false,
       };
     } else {
+      //TODO: this logic sucks, optimize it in the future
+
+      // for every matching row index, update the row with the new values
+      // for example if the matching row index is [3, 5]
+      // and the new values are {name: 'John', age: '30'}
+      // then the rows at index 3 and 5 will be updated with the new values
       for (let i = 0; i < matchingRowIndex.length; i++) {
+        // get the row which needs to be updated
+        // +1 because the first row is the header
         const range = `Sheet1!A${matchingRowIndex[i] + 1}:Z${matchingRowIndex[i] + 1}`;
         const oldData = await sheets.spreadsheets.values.get({
           spreadsheetId: sheetId,
           range,
         });
         let newRow = oldData.data.values[0];
+
+        // iterate over keys of newValues which user wants to update
+        // and get the column index of each key
+        // and add in the newRow, they index of column and value to be updated at that index
+        // for example if user wants to update {name: 'John', age: '30'}
+        // and the column index of name is 0 and age is 1
+        // then the newRow will be ['John', '30']
         for (let key in newValues) {
           const index = (
             await this.getColumnIndex(sheetId, key, sheets, sheetName)
           ).columnPosition;
           newRow[index] = JSON.stringify(newValues[key]);
         }
+        // update the row in the sheet
         await sheets.spreadsheets.values.update({
           spreadsheetId: sheetId,
           range,
@@ -389,6 +474,7 @@ export class xlsDBService {
           requestBody: { values: [newRow] },
         });
       }
+
       return {
         message: 'Data updated',
         success: true,
@@ -404,11 +490,14 @@ export class xlsDBService {
     sheets: sheets_v4.Sheets,
     sheetName?: string,
   ) {
+    // get all data from the sheet, which matches the where condition
     const response = await this.getAll(whereCondition, sheetId, sheets);
 
+    // get the matching rows indexes
     let { matchingRowIndex } = response;
 
-    matchingRowIndex.reverse();
+    //
+    // matchingRowIndex.reverse();
 
     if (matchingRowIndex.length === 0) {
       return {
@@ -421,7 +510,15 @@ export class xlsDBService {
         sheets,
         sheetName ?? 'Sheet1',
       );
-      for (let i = 0; i < matchingRowIndex.length; i++) {
+      // delete the rows from the sheet, starting from the last row
+      // to avoid index shifting
+      // for example if the matching row index is [3, 5]
+      // and we delete the row at index 3 first, then the row at index 5 will shift to index 4
+      // and we will end up deleting the wrong row
+      // so we need to delete the rows from the last index to the first index
+      // since matchingRowIndex is sorted in ascending order
+      // we need to reverse it to delete the rows from the last index to the first index
+      for (let i = matchingRowIndex.length; i >= 0; i--) {
         const request = {
           spreadsheetId: sheetId,
           resource: {
