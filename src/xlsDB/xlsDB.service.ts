@@ -1,17 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
-import * as fs from 'fs';
-import { google, sheets_v4 } from 'googleapis';
+import { Injectable } from '@nestjs/common';
+import { sheets_v4 } from 'googleapis';
 import { matchData } from './utils/matchData';
 import { createObjectfromArrays } from './utils/createObjectfromArrays';
-import { ConfigService } from '@nestjs/config';
 import { GoogleSheetsService } from './googleSheets.service';
-
-const SCOPES = [
-  'https://www.googleapis.com/auth/spreadsheets',
-  'https://www.googleapis.com/auth/drive',
-];
-const CREDENTIALS_PATH =
-  '/Users/Ritvik_Mahajan/xls-db/sheets-as-db-427314-7ad9c5288c0d.json';
 
 @Injectable()
 export class xlsDBService {
