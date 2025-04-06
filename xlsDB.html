@@ -1,0 +1,222 @@
+<html>
+  <head>
+    <style>
+      body {
+        color: black;
+      }
+      pre {
+            padding: 12px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-break: break-all;
+            width:fit-content
+        }
+        code {
+            font-family: monospace;
+            font-size: 1em;
+        }
+    </style>
+  </head>
+  <body>
+    <h1 id="-launching-xlsdb-turn-google-sheets-into-live-apis-in-minutes">
+      🚀 Launching xlsDB: Turn Google Sheets into Live APIs in Minutes
+    </h1>
+    <p>
+      What if your backend was as simple as a Google Sheet?<br />No database.<br />No
+      infrastructure.<br />No complex setup.<br />Meet <strong>xlsDB</strong> —
+      a lightweight backend service that lets you use
+      <strong>Google Sheets as a database</strong>, exposed via clean, secure
+      APIs.
+    </p>
+    <h2 id="-why-xlsdb-">💡 Why xlsDB?</h2>
+    <p>We’ve all been there:</p>
+    <ul>
+      <li>You’re building a quick MVP or internal tool.</li>
+      <li>You don’t want to set up Postgres or Firebase.</li>
+      <li>
+        You need your team to be able to view/edit data <em>right now</em>.
+      </li>
+    </ul>
+    <p>
+      Google Sheets already does 80% of what we need:<br />✅ Easy data
+      editing<br />✅ History and versioning<br />✅ Access control<br />✅
+      Familiar UI<br />So why not just turn your Sheet into an
+      <strong>API</strong>?<br />That’s exactly what xlsDB does.
+    </p>
+    <h2 id="-what-is-xlsdb-">⚙️ What is xlsDB?</h2>
+    <h3
+      id="xlsdb-is-a-hosted-service-that-exposes-your-google-sheet-as-a-set-of-rest-apis-"
+    >
+      xlsDB is a hosted service that exposes your Google Sheet as a set of
+      <strong>REST APIs</strong>.
+    </h3>
+    <ul>
+      <li>🔐 Authenticated via Google Service Accounts</li>
+      <li>📄 Each Sheet tab = a resource</li>
+      <li>📦 Supports full CRUD operations</li>
+      <li>📈 Built for small apps, MVPs, internal tools</li>
+      <li>
+        🧩 You can build your own wrappers or use it directly with fetch() /
+        axios
+      </li>
+    </ul>
+    <p>
+      No libraries. No SDKs. Just APIs.<br />You bring the spreadsheet, and
+      xlsDB handles the rest.
+    </p>
+    <h2 id="-how-it-works">🧠 How It Works</h2>
+    <ol>
+      <li>
+        <strong>Create a Google Sheet</strong>
+        <ul>
+          <li>Set up your columns; the headers in the top row will serve as column names.  Adding a new column is equivalent to adding a header to the top row of the sheet.
+        </ul>
+      </li>
+      <li>
+        <strong>Generate a Google Service Account</strong>
+        <ul>
+          <li>Grab the client email and private key</li>
+          <li>Share your sheet with the client email</li>
+        </ul>
+      </li>
+      <li>
+        <p><strong>Send requests to xlsDB endpoints</strong></p>
+        <ul>
+          <li>
+            <p>Example: <i>when your columns are -- age, name & email -- and you want to add values</i></p>
+            <code><pre>POST /xlsDB/add HTTP/1.1
+ Host: xls-db.onrender.com
+ accept: application/json
+ Content-Type: application/json
+ Content-Length: 276
+ 
+ {
+     "values": {
+         "name": "Alice Jane",
+         "age": 12,
+         "email": "alicejane69@gmail.com"
+     },
+     "sheetId": "{your-spreadsheetid}",
+     "serviceClientEmail": "{your-service-account-client-email}",
+     "servicePrivateKey": "{your-service-account-private-key}"
+ }
+</pre></code>
+ <p>
+  <mark>And don't worry, we don't store your private keys or anything creepy like that.</mark>
+</p>
+<li>
+  <strong>How to get the Spreadsheet ID:</strong> The Spreadsheet ID is found in the URL of your Google Sheet.</br>For example: <code>`https://docs.google.com/spreadsheets/d/<mark style="background-color: lightgreen;">{your-speadsheetid}</mark>/edit...`</code>
+</li>
+<li>
+  <strong>How to get the Client Email and Private Key:</strong>
+  <ol>
+      <li>Go to the <a href="https://console.cloud.google.com/">Google Cloud Console</a>.</li>
+      <li>Create a new project or select an existing one.</li>
+      <li>Enable the "Google Sheets API".</li>
+      <li>Create a service account (under "IAM & Admin" > "Service accounts").</li>
+      <li>Download the JSON key file.  This file contains your <mark style="background-color: lightgreen;">client email</mark> and <mark style="background-color: lightgreen;">private key</mark>.</li>
+  </ol>
+</li>
+          </li>
+        </ul>
+      </li>
+    </ol>
+    <p>✅ That’s it. Your data is now live and editable via REST.</p>
+    <h2 id="-who-is-this-for-">🎯 Who Is This For?</h2>
+    <ul>
+      <li>🧪 Indie hackers who want to ship faster</li>
+      <li>🛠️ Startup teams building quick internal tools</li>
+      <li>🧰 No-code/low-code builders who just need API glue</li>
+    </ul>
+    <h2 id="-supabase-firebase-why-not-those-">
+      🆚 Supabase, Firebase? Why Not Those?
+    </h2>
+    <p>They’re great. But here’s the thing:</p>
+    <table>
+      <thead>
+        <tr>
+          <th><strong>Feature</strong></th>
+          <th><strong>Supabase / Firebase</strong></th>
+          <th><strong>xlsDB</strong></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Setup time</td>
+          <td>10–30 mins</td>
+          <td>2–5 mins</td>
+        </tr>
+        <tr>
+          <td>Learning curve</td>
+          <td>Medium</td>
+          <td>Zero (it’s Sheets)</td>
+        </tr>
+        <tr>
+          <td>Hosting required</td>
+          <td>✅</td>
+          <td>❌ (runs on Sheets)</td>
+        </tr>
+        <tr>
+          <td>Data structure</td>
+          <td>Relational</td>
+          <td>Flat (like Sheets)</td>
+        </tr>
+        <tr>
+          <td>Great for</td>
+          <td>Scalable apps</td>
+          <td>MVPs, Micro-apps</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      <strong>Use xlsDB when you need to move fast</strong> and don’t want infra
+      overhead.
+    </p>
+    <h2 id="-what-it-s-not">⚠️ What It’s Not</h2>
+    <ul>
+      <li>Not meant for high-concurrency or transactional workloads</li>
+      <li>Not a relational database replacement</li>
+      <li>
+        Not a long-term data warehouse solution<br /><strong
+          >Think MVPs. Think experiments. Think fast.</strong
+        >
+      </li>
+    </ul>
+    <h2 id="-wrapping-up">💬 Wrapping Up</h2>
+    <p>
+      xlsDB is designed for builders who value
+      <strong>speed, simplicity, and flexibility</strong>.<br />If you can
+      structure your data in a Google Sheet, you can now
+      <strong>instantly expose it to your apps</strong> via REST — without
+      writing a backend.
+    </p>
+    <p>
+      It’s backend-as-a-sheet.<br />It’s JSON over Google Sheets.<br />It’s
+      ridiculously simple.
+    </p>
+    <p>
+      👉
+      <a target="_blank" href="https://xls-db.onrender.com/api#/">Try it now</a>
+      (API docs)
+    </p>
+    <h2 id="-got-feedback-">🙌 Got Feedback?</h2>
+    <p>
+      xlsDB is an experiment by
+      <a href="http://rm17.work">Ritvik Mahajan</a>.
+      <br />
+      Got feedback, ideas, or just want to say thanks? Drop me a line on Twitter
+      <a href="https://x.com/ritvikmahajan17">@ritvikmahajan17</a> or drop an
+      email
+      <a
+        href="mailto:ritvikmahajan2001@gmail.com?subject=Feedback%20on%20xlsDB"
+      >
+        here</a
+      >
+    </p>
+  </body>
+</html>
