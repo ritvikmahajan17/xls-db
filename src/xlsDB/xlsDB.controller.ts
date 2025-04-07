@@ -315,9 +315,7 @@ export class xlsDBController {
   @ApiExcludeEndpoint()
   @Get('')
   serveDocs(@Res() res: Response) {
-    console.log('serveDocs');
     const filePath = path.join(__dirname, '..', '..', 'src', 'xlsDB.html');
-    console.log('filePath', filePath);
     if (!fs.existsSync(filePath)) {
       return res.status(HttpStatus.NOT_FOUND).send('docs.html not found');
     }
