@@ -86,7 +86,7 @@
           <li>
             <strong>How to get the Client Email and Private Key:</strong>
             <ol>
-                <li>Go to the <a href="https://console.cloud.google.com/">Google Cloud Console</a>.</li>
+                <li>Go to the <a target="_blank" href="https://console.cloud.google.com/">Google Cloud Console</a>.</li>
                 <li>Create a new project or select an existing one.</li>
                 <li>Enable the "Google Sheets API".</li>
                 <li>Create a service account (under "IAM & Admin" > "Service accounts").</li>
@@ -98,8 +98,9 @@
       <li>
         <p><strong>Send requests to xlsDB endpoints</strong></p>
         <ul>
+          <i>when your columns are -- age, name & email -- and you want to add values</i>
           <li>
-            <p>Example: <i>when your columns are -- age, name & email -- and you want to add values</i></p>
+            <p>Example: </p>
             <code><pre>POST /xlsDB/add HTTP/1.1
  Host: xls-db.onrender.com
  accept: application/json
@@ -117,8 +118,25 @@
      "servicePrivateKey": "{your-service-account-private-key}"
  }
 </pre></code>
+<li>
+  Example (curl):
+  <pre id="curl-example"><code>curl --location 'https://xls-db.onrender.com/xlsDB/add' \
+--header 'accept: application/json' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+"values": {
+"name": "Alice Jane",
+"age": 12,
+"email": "alicejane69@gmail.com"
+},
+"sheetId": "{your-sheetid}",
+"serviceClientEmail": "{your-service-account-client-email}",
+"servicePrivateKey": "{your-service-account-private-key}"
+}'
+</code></pre>
+</li>
  <p>
-  <mark>And don't worry, we don't store your private keys or anything creepy like that.</mark>
+  <mark>And don't worry, we don't store your private keys or anything creepy like that, in fact we dont have a database lol</mark>
 </p>
           </li>
         </ul>
