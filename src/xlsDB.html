@@ -78,10 +78,21 @@
         </ul>
       </li>
       <li>
-        <strong>Generate a Google Service Account</strong>
+        <strong>Grab essential credtials</strong>
         <ul>
-          <li>Grab the client email and private key</li>
-          <li>Share your sheet with the client email</li>
+          <li>
+            <strong>How to get the Spreadsheet Id:</strong> The Spreadsheet Id is found in the URL of your Google Sheet.</br>For example: <code>`https://docs.google.com/spreadsheets/d/<mark style="background-color: lightgreen;">{your-speadsheetid}</mark>/edit...`</code>
+          </li>
+          <li>
+            <strong>How to get the Client Email and Private Key:</strong>
+            <ol>
+                <li>Go to the <a href="https://console.cloud.google.com/">Google Cloud Console</a>.</li>
+                <li>Create a new project or select an existing one.</li>
+                <li>Enable the "Google Sheets API".</li>
+                <li>Create a service account (under "IAM & Admin" > "Service accounts").</li>
+                <li>Download the JSON key file.  This file contains your <mark style="background-color: lightgreen;">client email</mark> and <mark style="background-color: lightgreen;">private key</mark>.</li>
+            </ol>
+          </li>
         </ul>
       </li>
       <li>
@@ -109,19 +120,6 @@
  <p>
   <mark>And don't worry, we don't store your private keys or anything creepy like that.</mark>
 </p>
-<li>
-  <strong>How to get the Spreadsheet ID:</strong> The Spreadsheet ID is found in the URL of your Google Sheet.</br>For example: <code>`https://docs.google.com/spreadsheets/d/<mark style="background-color: lightgreen;">{your-speadsheetid}</mark>/edit...`</code>
-</li>
-<li>
-  <strong>How to get the Client Email and Private Key:</strong>
-  <ol>
-      <li>Go to the <a href="https://console.cloud.google.com/">Google Cloud Console</a>.</li>
-      <li>Create a new project or select an existing one.</li>
-      <li>Enable the "Google Sheets API".</li>
-      <li>Create a service account (under "IAM & Admin" > "Service accounts").</li>
-      <li>Download the JSON key file.  This file contains your <mark style="background-color: lightgreen;">client email</mark> and <mark style="background-color: lightgreen;">private key</mark>.</li>
-  </ol>
-</li>
           </li>
         </ul>
       </li>
