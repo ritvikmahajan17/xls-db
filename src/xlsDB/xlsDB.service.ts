@@ -1,11 +1,22 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { sheets_v4 } from 'googleapis';
 import { matchData } from './utils/matchData';
 import { createObjectfromArrays } from './utils/createObjectfromArrays';
 import { GoogleSheetsService } from './googleSheets.service';
+import {
+  SheetNotFoundException,
+  ColumnNotFoundException,
+  GoogleSheetsApiException,
+  CacheOperationException,
+} from './exceptions/xlsDB.exceptions';
 
+/**
+ * Service for interacting with Google Sheets as a database
+ * Provides CRUD operations and caching functionality
+ */
 @Injectable()
 export class xlsDBService {
+  private readonly logger = new Logger(xlsDBService.name);
   private columnHeadersCache: Map<
     string,
     { numOfColumns: number; headersPosition: { [key in string]: number } }
@@ -15,6 +26,10 @@ export class xlsDBService {
     this.columnHeadersCache = new Map();
   }
 
+  /**
+   * Retrieves the current state of the column headers cache
+   * @returns Map containing cached column headers
+   */
   getCache() {
     return this.columnHeadersCache;
   }
@@ -23,62 +38,138 @@ export class xlsDBService {
     HELPER FUNCTIONS
   */
 
+  /**
+   * Fetches column headers from a Google Sheet
+   * @param sheetId - ID of the Google Sheet
+   * @param sheets - Google Sheets API client
+   * @param sheetName - Optional name of the specific sheet
+   * @returns Promise resolving to array of column headers
+   * @throws SheetNotFoundException when sheet is not found
+   * @throws GoogleSheetsApiException when API call fails
+   */
   private async fetchColumnHeaders(
     sheetId: string,
     sheets: sheets_v4.Sheets,
     sheetName?: string,
   ): Promise<string[]> {
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: sheetId,
-      range: sheetName ? `${sheetName}!1:1` : 'Sheet1!1:1',
-    });
-    return response.data.values[0];
+    try {
+      const response = await sheets.spreadsheets.values.get({
+        spreadsheetId: sheetId,
+        range: sheetName ? `${sheetName}!1:1` : 'Sheet1!1:1',
+      });
+
+      if (!response.data.values || !response.data.values[0]) {
+        throw new SheetNotFoundException(sheetId);
+      }
+
+      return response.data.values[0];
+    } catch (error) {
+      this.logger.error(`Failed to fetch column headers: ${error.message}`);
+      if (error instanceof SheetNotFoundException) {
+        throw error;
+      }
+      throw new GoogleSheetsApiException(error.message);
+    }
   }
 
+  /**
+   * Initializes and caches column headers for a sheet
+   * @param sheetId - ID of the Google Sheet
+   * @param sheets - Google Sheets API client
+   * @param sheetName - Optional name of the specific sheet
+   * @throws SheetNotFoundException when sheet is not found
+   * @throws GoogleSheetsApiException when API call fails
+   */
   private async initColumnHeaders(
     sheetId: string,
     sheets: sheets_v4.Sheets,
     sheetName?: string,
   ) {
-    const headers = await this.fetchColumnHeaders(sheetId, sheets, sheetName);
-    const numOfColumns = headers.length;
+    try {
+      const headers = await this.fetchColumnHeaders(sheetId, sheets, sheetName);
+      const numOfColumns = headers.length;
 
-    const headersPosition = {};
-    headers.forEach((header, index) => {
-      headersPosition[header.trim()] = index;
-    });
+      const headersPosition = {};
+      headers.forEach((header, index) => {
+        headersPosition[header.trim()] = index;
+      });
 
-    this.columnHeadersCache.set(sheetId, { numOfColumns, headersPosition });
+      this.columnHeadersCache.set(sheetId, { numOfColumns, headersPosition });
+    } catch (error) {
+      this.logger.error(
+        `Failed to initialize column headers: ${error.message}`,
+      );
+      throw error;
+    }
   }
 
+  /**
+   * Gets the number of columns in a sheet
+   * @param sheetId - ID of the Google Sheet
+   * @param sheets - Google Sheets API client
+   * @param sheetName - Optional name of the specific sheet
+   * @returns Promise resolving to number of columns
+   * @throws SheetNotFoundException when sheet is not found
+   * @throws GoogleSheetsApiException when API call fails
+   */
   private async getNumOfColumns(
     sheetId: string,
     sheets: sheets_v4.Sheets,
     sheetName?: string,
   ): Promise<number> {
-    if (!this.columnHeadersCache.has(sheetId)) {
-      await this.initColumnHeaders(sheetId, sheets, sheetName);
+    try {
+      if (!this.columnHeadersCache.has(sheetId)) {
+        await this.initColumnHeaders(sheetId, sheets, sheetName);
+      }
+      return this.columnHeadersCache.get(sheetId).numOfColumns;
+    } catch (error) {
+      this.logger.error(`Failed to get number of columns: ${error.message}`);
+      throw error;
     }
-    return this.columnHeadersCache.get(sheetId).numOfColumns;
   }
 
+  /**
+   * Gets column headers and their positions
+   * @param sheetId - ID of the Google Sheet
+   * @param sheets - Google Sheets API client
+   * @param sheetName - Optional name of the specific sheet
+   * @returns Promise resolving to object containing column headers and their positions
+   * @throws SheetNotFoundException when sheet is not found
+   * @throws GoogleSheetsApiException when API call fails
+   */
   private async getColumnsHeaders(
     sheetId: string,
     sheets: sheets_v4.Sheets,
     sheetName?: string,
   ): Promise<any> {
-    if (!this.columnHeadersCache?.has(sheetId)) {
-      await this.initColumnHeaders(sheetId, sheets, sheetName);
-    }
-    const { numOfColumns, headersPosition: columnHeaders } =
-      this.columnHeadersCache.get(sheetId);
+    try {
+      if (!this.columnHeadersCache?.has(sheetId)) {
+        await this.initColumnHeaders(sheetId, sheets, sheetName);
+      }
+      const { numOfColumns, headersPosition: columnHeaders } =
+        this.columnHeadersCache.get(sheetId);
 
-    return {
-      numOfColumns,
-      columnHeaders,
-    };
+      return {
+        numOfColumns,
+        columnHeaders,
+      };
+    } catch (error) {
+      this.logger.error(`Failed to get column headers: ${error.message}`);
+      throw error;
+    }
   }
 
+  /**
+   * Gets the position of a specific column
+   * @param sheetId - ID of the Google Sheet
+   * @param columnName - Name of the column
+   * @param sheets - Google Sheets API client
+   * @param sheetName - Optional name of the specific sheet
+   * @returns Promise resolving to object containing number of columns and column position
+   * @throws ColumnNotFoundException when column is not found
+   * @throws SheetNotFoundException when sheet is not found
+   * @throws GoogleSheetsApiException when API call fails
+   */
   private async getColumnIndex(
     sheetId: string,
     columnName: string,
@@ -88,22 +179,31 @@ export class xlsDBService {
     numOfColumns: number;
     columnPosition: number;
   }> {
-    const { numOfColumns, columnHeaders } = await this.getColumnsHeaders(
-      sheetId,
-      sheets,
-      sheetName,
-    );
+    try {
+      const { numOfColumns, columnHeaders } = await this.getColumnsHeaders(
+        sheetId,
+        sheets,
+        sheetName,
+      );
 
-    if (columnHeaders) {
+      if (columnHeaders) {
+        const position = columnHeaders?.[columnName];
+        if (position === undefined) {
+          throw new ColumnNotFoundException(columnName);
+        }
+        return {
+          numOfColumns,
+          columnPosition: position,
+        };
+      }
       return {
         numOfColumns,
-        columnPosition: columnHeaders?.[columnName] ?? -1,
+        columnPosition: -1,
       };
+    } catch (error) {
+      this.logger.error(`Failed to get column index: ${error.message}`);
+      throw error;
     }
-    return {
-      numOfColumns,
-      columnPosition: -1,
-    };
   }
 
   private async getSheetId(
