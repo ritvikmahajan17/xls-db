@@ -15,7 +15,7 @@ Whether you’re a solo founder, indie hacker, or just want a fast way to get da
    - Create a Google Cloud project.
    - Enable the **Google Sheets API** for your project.
    - Create a **Service Account** and download the JSON credentials file.
-     -For details on how to set up a Google Service Account, refer to the [Service Account Setup](#setting-up-a-google-service-account) section.
+   - Share your Google Sheet with the service account by adding the `client_email` as a collaborator with **Editor** permissions.
 
 2. **Install Dependencies**:
    Run the following command in the project directory:
