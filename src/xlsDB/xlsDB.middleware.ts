@@ -1,9 +1,17 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
+import logger from '../config/logger.config';
 
 @Injectable()
 export class TransformBodyMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
+    logger.info('Incoming request', { 
+      hostname: req.hostname, 
+      method: req.method,
+      url: req.originalUrl,
+      userAgent: req.get('User-Agent') 
+    });
+    
     console.log(req.hostname, 'Request URL:', req.originalUrl);
     if (req.body) {
       req.body = this.transform(req.body);

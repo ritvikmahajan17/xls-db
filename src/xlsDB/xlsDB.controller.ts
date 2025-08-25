@@ -17,6 +17,7 @@ import { DeleteDto } from './dto/delete.dto';
 import { BatchAddDto } from './dto/batch-add.dto';
 import { ApiExcludeEndpoint, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { GoogleSheetsService } from './googleSheets.service';
+import logger from '../config/logger.config';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -44,24 +45,44 @@ export class xlsDBController {
   })
   @Post('add')
   async add(@Body() body: AddDto) {
-    const values = body.values;
-    const sheetId = body.sheetId;
-    const serviceClientEmail = body.serviceClientEmail;
-    const servicePrivateKey = body.servicePrivateKey;
-    const sheetName = body?.sheetName;
+    try {
+      logger.info('Add endpoint called', { 
+        sheetId: body.sheetId, 
+        sheetName: body.sheetName 
+      });
+      
+      const values = body.values;
+      const sheetId = body.sheetId;
+      const serviceClientEmail = body.serviceClientEmail;
+      const servicePrivateKey = body.servicePrivateKey;
+      const sheetName = body?.sheetName;
 
-    const sheets = await this.googleSheetsService.createClient({
-      client_email: serviceClientEmail,
-      private_key: servicePrivateKey,
-    });
+      const sheets = await this.googleSheetsService.createClient({
+        client_email: serviceClientEmail,
+        private_key: servicePrivateKey,
+      });
 
-    const response = await this.xlsDBService.add(
-      values,
-      sheetId,
-      sheets,
-      sheetName,
-    );
-    return response;
+      const response = await this.xlsDBService.add(
+        values,
+        sheetId,
+        sheets,
+        sheetName,
+      );
+      
+      logger.info('Add operation completed successfully', { 
+        sheetId, 
+        updatedCells: response?.updatedCells 
+      });
+      
+      return response;
+    } catch (error) {
+      logger.error('Error in add endpoint', { 
+        sheetId: body.sheetId, 
+        error: error.message,
+        stack: error.stack 
+      });
+      throw error;
+    }
   }
 
   @ApiOperation({ summary: 'Append multiple data rows to Google Sheet' })

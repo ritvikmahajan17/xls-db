@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import logger from './config/logger.config';
 declare const module: any;
 
 async function bootstrap() {
@@ -24,6 +25,10 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   await app.listen(5050);
+  logger.info('xlsDB application started successfully', { 
+    port: 5050, 
+    environment: process.env.NODE_ENV || 'development' 
+  });
   console.log('App is running on port 5050');
 
   if (module.hot) {
