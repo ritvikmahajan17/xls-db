@@ -1,0 +1,14 @@
+# Ignore everything except dist and required files
+
+-
+
+# Include only these files/folders
+
+!dist/
+!dist/\*\*
+!package.json
+
+# Keep EB configuration
+
+!.elasticbeanstalk/
+!.elasticbeanstalk/\*\*

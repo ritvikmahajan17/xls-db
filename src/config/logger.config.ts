@@ -13,42 +13,36 @@ const logger: Logger = createLogger({
   format: combine(
     timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     errors({ stack: true }),
-    json()
+    json(),
   ),
   defaultMeta: { service: 'xlsDB' },
   transports: [
     // Write all logs with importance level of 'error' or less to error.log
-    new transports.File({ 
-      filename: 'logs/error.log', 
+    new transports.File({
+      filename: 'logs/error.log',
       level: 'error',
-      format: combine(
-        timestamp(),
-        errors({ stack: true }),
-        json()
-      )
+      format: combine(timestamp(), errors({ stack: true }), json()),
     }),
     // Write all logs to combined.log
-    new transports.File({ 
+    new transports.File({
       filename: 'logs/combined.log',
-      format: combine(
-        timestamp(),
-        errors({ stack: true }),
-        json()
-      )
+      format: combine(timestamp(), errors({ stack: true }), json()),
     }),
   ],
 });
 
 // If we're not in production, also log to the console
 if (process.env.NODE_ENV !== 'production') {
-  logger.add(new transports.Console({
-    format: combine(
-      colorize(),
-      timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-      errors({ stack: true }),
-      consoleFormat
-    )
-  }));
+  logger.add(
+    new transports.Console({
+      format: combine(
+        colorize(),
+        timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+        errors({ stack: true }),
+        consoleFormat,
+      ),
+    }),
+  );
 }
 
 export default logger;

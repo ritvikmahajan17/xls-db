@@ -137,11 +137,11 @@ export class xlsDBService {
     sheets: sheets_v4.Sheets,
     sheetName?: string,
   ) {
-    logger.info(`Starting add operation for sheet: ${sheetId}`, { 
-      sheetName, 
-      valuesCount: Object.keys(values).length 
+    logger.info(`Starting add operation for sheet: ${sheetId}`, {
+      sheetName,
+      valuesCount: Object.keys(values).length,
     });
-    
+
     const positionValuesMap = {};
     let totalColumns = 0;
 
@@ -186,12 +186,12 @@ export class xlsDBService {
       valueInputOption: 'RAW',
       requestBody: { values: [row] },
     });
-    
-    logger.info(`Successfully added row to sheet: ${sheetId}`, { 
-      sheetName, 
-      updatedCells: response.data.updates?.updatedCells 
+
+    logger.info(`Successfully added row to sheet: ${sheetId}`, {
+      sheetName,
+      updatedCells: response.data.updates?.updatedCells,
     });
-    
+
     return response.data.updates;
   }
 
@@ -271,11 +271,11 @@ export class xlsDBService {
     sheets: sheets_v4.Sheets,
     sheetName?: string,
   ) {
-    logger.info(`Starting getOne operation for sheet: ${sheetId}`, { 
-      sheetName, 
-      whereCondition 
+    logger.info(`Starting getOne operation for sheet: ${sheetId}`, {
+      sheetName,
+      whereCondition,
     });
-    
+
     // get all data from the sheet
     const response = await sheets.spreadsheets.values.batchGet({
       spreadsheetId: sheetId,
@@ -327,23 +327,23 @@ export class xlsDBService {
         Object.keys(columnHeaders),
         matchingRow,
       );
-      
-      logger.info(`Successfully found matching row in sheet: ${sheetId}`, { 
-        sheetName, 
-        matchingRowIndex 
+
+      logger.info(`Successfully found matching row in sheet: ${sheetId}`, {
+        sheetName,
+        matchingRowIndex,
       });
-      
+
       return {
         matchingRowIndex,
         value: valuesAsObject,
         success: true,
       };
     } else {
-      logger.warn(`No matching row found in sheet: ${sheetId}`, { 
-        sheetName, 
-        whereCondition 
+      logger.warn(`No matching row found in sheet: ${sheetId}`, {
+        sheetName,
+        whereCondition,
       });
-      
+
       // return no data found
       return {
         matchingRowIndex,
@@ -444,12 +444,12 @@ export class xlsDBService {
     sheets: sheets_v4.Sheets,
     sheetName?: string,
   ) {
-    logger.info(`Starting update operation for sheet: ${sheetId}`, { 
-      sheetName, 
-      whereCondition, 
-      newValuesCount: Object.keys(newValues).length 
+    logger.info(`Starting update operation for sheet: ${sheetId}`, {
+      sheetName,
+      whereCondition,
+      newValuesCount: Object.keys(newValues).length,
     });
-    
+
     // get all data from the sheet, which matches the where condition
     const response = await this.getAll(whereCondition, sheetId, sheets);
 
@@ -515,11 +515,11 @@ export class xlsDBService {
     sheets: sheets_v4.Sheets,
     sheetName?: string,
   ) {
-    logger.info(`Starting delete operation for sheet: ${sheetId}`, { 
-      sheetName, 
-      whereCondition 
+    logger.info(`Starting delete operation for sheet: ${sheetId}`, {
+      sheetName,
+      whereCondition,
     });
-    
+
     // get all data from the sheet, which matches the where condition
     const response = await this.getAll(whereCondition, sheetId, sheets);
 

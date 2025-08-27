@@ -46,16 +46,19 @@ export class xlsDBController {
   @Post('add')
   async add(@Body() body: AddDto) {
     try {
-      logger.info('Add endpoint called', { 
-        sheetId: body.sheetId, 
-        sheetName: body.sheetName 
+      logger.info('Add endpoint called', {
+        sheetId: body.sheetId,
+        sheetName: body.sheetName,
       });
-      
+
       const values = body.values;
       const sheetId = body.sheetId;
       const serviceClientEmail = body.serviceClientEmail;
       const servicePrivateKey = body.servicePrivateKey;
       const sheetName = body?.sheetName;
+
+      console.log('serviceClientEmail', serviceClientEmail);
+      console.log('servicePrivateKey', servicePrivateKey);
 
       const sheets = await this.googleSheetsService.createClient({
         client_email: serviceClientEmail,
@@ -68,18 +71,18 @@ export class xlsDBController {
         sheets,
         sheetName,
       );
-      
-      logger.info('Add operation completed successfully', { 
-        sheetId, 
-        updatedCells: response?.updatedCells 
+
+      logger.info('Add operation completed successfully', {
+        sheetId,
+        updatedCells: response?.updatedCells,
       });
-      
+
       return response;
     } catch (error) {
-      logger.error('Error in add endpoint', { 
-        sheetId: body.sheetId, 
+      logger.error('Error in add endpoint', {
+        sheetId: body.sheetId,
         error: error.message,
-        stack: error.stack 
+        stack: error.stack,
       });
       throw error;
     }
@@ -213,6 +216,9 @@ export class xlsDBController {
   async getAll(@Body() body: FindDto, @Res() res: Response) {
     const { where, sheetId, serviceClientEmail, servicePrivateKey, sheetName } =
       body;
+
+    console.log('serviceClientEmail', serviceClientEmail);
+    console.log('servicePrivateKey', servicePrivateKey);
 
     const sheets = await this.googleSheetsService.createClient({
       client_email: serviceClientEmail,
