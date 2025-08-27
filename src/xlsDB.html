@@ -9,6 +9,29 @@
 
   gtag('config', 'G-5M4M5SDQSN');
 </script>
+    <script>
+      // Dynamically set URLs based on current host
+      document.addEventListener('DOMContentLoaded', function() {
+        const currentHost = window.location.origin;
+        const apiDocsUrl = currentHost + '/api';           // For Swagger API docs
+        const apiBaseUrl = currentHost;                    // For API endpoint examples
+        const hostName = window.location.host;            // Just the hostname for headers
+        
+        // Update API documentation links (Swagger)
+        const apiLink = document.getElementById('api-link');
+        const tryNowLink = document.getElementById('try-now-link');
+        if (apiLink) apiLink.href = apiDocsUrl;
+        if (tryNowLink) tryNowLink.href = apiDocsUrl;
+        
+        // Update host name in HTTP headers
+        const hostNameElement = document.getElementById('host-name');
+        if (hostNameElement) hostNameElement.textContent = hostName;
+        
+        // Update API base URL in curl examples  
+        const apiBaseUrlElement = document.getElementById('api-base-url');
+        if (apiBaseUrlElement) apiBaseUrlElement.textContent = apiBaseUrl;
+      });
+    </script>
     <style>
       body {
         color: black;
@@ -59,7 +82,7 @@
       <strong>Google Sheets as a database</strong>, exposed via clean, secure
       APIs.
     </p>
-    <p><i>let the API schema talk? check it out -- <a target="_blank" href="http://xls-db-prod.eba-p25zdneu.us-east-1.elasticbeanstalk.com/api"><mark style="font-family: monospace;">here</mark></a>
+    <p><i>let the API schema talk? check it out -- <a target="_blank" href="#" id="api-link"><mark style="font-family: monospace;">here</mark></a>
     </i></p>
     <h2 id="-why-xlsdb-">💡 Why xlsDB?</h2>
     <p>We’ve all been there:</p>
@@ -131,7 +154,7 @@
           <li>
             <p>Example: </p>
             <code><pre>POST /xlsDB/add HTTP/1.1
- Host: xls-db.onrender.com
+ Host: <span id="host-name"></span>
  accept: application/json
  Content-Type: application/json
  Content-Length: 276
@@ -149,7 +172,7 @@
 </pre></code>
 <li>
   Example (curl):
-  <pre id="curl-example"><code>curl --location 'http://xls-db-prod.eba-p25zdneu.us-east-1.elasticbeanstalk.com/xlsDB/add' \
+  <pre id="curl-example"><code>curl --location '<span id="api-base-url"></span>/xlsDB/add' \
 --header 'accept: application/json' \
 --header 'Content-Type: application/json' \
 --data-raw '{
@@ -246,7 +269,7 @@
     </p>
     <p>
       👉
-      <a target="_blank" href="http://xls-db-prod.eba-p25zdneu.us-east-1.elasticbeanstalk.com/api"><mark style="font-family: monospace; font-size: x-large;">Try it now</mark></a>
+      <a target="_blank" href="#" id="try-now-link"><mark style="font-family: monospace; font-size: x-large;">Try it now</mark></a>
       (API docs)
     </p>
     <h2 id="-got-feedback-">🙌 Got Feedback?</h2>
