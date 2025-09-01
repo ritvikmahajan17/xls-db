@@ -5,6 +5,7 @@ export const matchData = (
     [key in number]: string;
   },
 ): boolean => {
+  if (!dataRow || dataRow.length === 0) return false;
   // iterate over the positionValuesMap and check if the value at the position in dataRow matches the value in positionValuesMap
   // if any value does not match, return false
   // for example, if positionValuesMap is { 0: 'John', 1: 'Doe' } and dataRow is ['John', 'Doe'], return true

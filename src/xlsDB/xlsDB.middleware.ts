@@ -12,7 +12,6 @@ export class TransformBodyMiddleware implements NestMiddleware {
       userAgent: req.get('User-Agent'),
     });
 
-    console.log(req.hostname, 'Request URL:', req.originalUrl);
     if (req.body) {
       req.body = this.transform(req.body);
     }

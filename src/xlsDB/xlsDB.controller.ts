@@ -57,9 +57,6 @@ export class xlsDBController {
       const servicePrivateKey = body.servicePrivateKey;
       const sheetName = body?.sheetName;
 
-      console.log('serviceClientEmail', serviceClientEmail);
-      console.log('servicePrivateKey', servicePrivateKey);
-
       const sheets = await this.googleSheetsService.createClient({
         client_email: serviceClientEmail,
         private_key: servicePrivateKey,
@@ -216,9 +213,6 @@ export class xlsDBController {
   async getAll(@Body() body: FindDto, @Res() res: Response) {
     const { where, sheetId, serviceClientEmail, servicePrivateKey, sheetName } =
       body;
-
-    console.log('serviceClientEmail', serviceClientEmail);
-    console.log('servicePrivateKey', servicePrivateKey);
 
     const sheets = await this.googleSheetsService.createClient({
       client_email: serviceClientEmail,
